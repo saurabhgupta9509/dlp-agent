@@ -74,7 +74,7 @@ impl ServerCommunicator {
                 .timeout(Duration::from_secs(30))
                 .build()
                 .expect("Failed to create HTTP client"),
-            base_url: "http://localhost:8080".to_string(),
+            base_url: "http://192.168.1.128:8080".to_string(),
             credentials: None,
         }
     }

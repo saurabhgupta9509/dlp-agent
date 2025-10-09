@@ -34,7 +34,7 @@ impl AgentCore {
     /// Create a new AgentCore with default configuration
     pub fn new() -> Self {
         let config = AgentConfig {
-            server_url: "http://localhost:8080".to_string(),
+            server_url: "http://192.168.1.128:8080".to_string(),
             hostname: whoami::hostname(),
             mac_address: get_mac_address(),
             poll_interval_sec: 30,

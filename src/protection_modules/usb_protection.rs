@@ -625,6 +625,44 @@ fn get_real_drive_info(&self, drive_path: &str) -> (String, u64) {
     }
 
     /// Send USB alert to backend
+    // async fn send_usb_alert(
+    //     &self,
+    //     device: &USBDeviceInfo,
+    //     file_analysis: &USBFileAnalysis,
+    //     action: &str,
+    //     communicator: &ServerCommunicator,
+    //     agent_id: u64,
+    //     token: &str
+    // ) -> Result<(), Box<dyn std::error::Error>> {
+    //     let usb_alert = serde_json::json!({
+    //         "agentId": agent_id,
+    //         "alertType": if action == "BLOCKED" { "USB_BLOCKED" } else { "USB_INSERTION" },
+    //         "deviceInfo": {
+    //             "driveLetter": device.drive_letter,
+    //             "volumeName": device.volume_name,
+    //             "totalSize": device.total_size,
+    //             "freeSpace": device.free_space,
+    //             "fileSystem": device.file_system,
+    //             "serialNumber": device.serial_number,
+    //             "insertionTime": device.insertion_time
+    //         },
+    //         "fileAnalysis": {
+    //             "totalFiles": file_analysis.total_files,
+    //             "totalFolders": file_analysis.total_folders,
+    //             "totalSize": file_analysis.total_size,
+    //             "fileTypes": file_analysis.file_types,
+    //             "fileList": file_analysis.file_list,
+    //             "suspiciousFiles": file_analysis.suspicious_files
+    //         },
+    //         "actionTaken": action,
+    //         "timestamp": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()
+    //     });
+
+    //     communicator.send_usb_alert(&usb_alert, token).await?;
+    //     log::info!("📤 USB alert sent: {} - {} files analyzed", device.drive_letter, file_analysis.total_files);
+    //     Ok(())
+    // }
+
     async fn send_usb_alert(
         &self,
         device: &USBDeviceInfo,
@@ -636,32 +674,36 @@ fn get_real_drive_info(&self, drive_path: &str) -> (String, u64) {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let usb_alert = serde_json::json!({
             "agentId": agent_id,
-            "alertType": if action == "BLOCKED" { "USB_BLOCKED" } else { "USB_INSERTION" },
-            "deviceInfo": {
-                "driveLetter": device.drive_letter,
-                "volumeName": device.volume_name,
-                "totalSize": device.total_size,
-                "freeSpace": device.free_space,
-                "fileSystem": device.file_system,
-                "serialNumber": device.serial_number,
-                "insertionTime": device.insertion_time
-            },
-            "fileAnalysis": {
-                "totalFiles": file_analysis.total_files,
-                "totalFolders": file_analysis.total_folders,
-                "totalSize": file_analysis.total_size,
-                "fileTypes": file_analysis.file_types,
-                "fileList": file_analysis.file_list,
-                "suspiciousFiles": file_analysis.suspicious_files
-            },
-            "actionTaken": action,
-            "timestamp": SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs()
+            "alertType": "USB_INSERTION",
+            "description": format!("USB device detected: {} - {} files analyzed", 
+                                  device.drive_letter, file_analysis.total_files),
+            "deviceInfo": format!("Drive: {}, Volume: {}, Size: {}GB", 
+                                 device.drive_letter, device.volume_name, 
+                                 device.total_size / 1_000_000_000),
+            "fileDetails": format!("Files: {}, Folders: {}, Total Size: {}MB, File Types: {:?}", 
+                                  file_analysis.total_files, file_analysis.total_folders,
+                                  file_analysis.total_size / 1_000_000, file_analysis.file_types),
+            "severity": "MEDIUM",
+            "actionTaken": action
         });
-
-        communicator.send_usb_alert(&usb_alert, token).await?;
-        log::info!("📤 USB alert sent: {} - {} files analyzed", device.drive_letter, file_analysis.total_files);
-        Ok(())
+    
+        println!("📤 SENDING USB ALERT TO BACKEND...");
+        println!("URL: /api/agent/alerts");
+        println!("Data: {}", usb_alert);
+    
+        // Send to the correct endpoint
+        match communicator.send_alert(&usb_alert, token).await {
+            Ok(_) => {
+                println!("✅ USB alert sent successfully to backend!");
+                Ok(())
+            }
+            Err(e) => {
+                println!("❌ Failed to send USB alert: {}", e);
+                Err(e)
+            }
+        }
     }
+
 }
 
 // ===== PROTECTION MODULE IMPLEMENTATION =====

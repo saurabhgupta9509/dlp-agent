@@ -24,7 +24,7 @@ impl AgentGUI {
             token: String::new(),
             username: String::new(),
             password: String::new(),
-            server_url: "http://localhost:8080".to_string(),
+            server_url: "http://192.168.128:8080".to_string(),
             is_authenticated: false,
             communicator: None,
         }
