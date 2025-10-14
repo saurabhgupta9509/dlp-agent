@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::time::Duration;
 use tokio::time;
 use log;
+use crate::config::BASE_URL;
 
 /// Configuration for the agent
 #[derive(Debug, Clone)]
@@ -34,10 +35,10 @@ impl AgentCore {
     /// Create a new AgentCore with default configuration
     pub fn new() -> Self {
         let config = AgentConfig {
-            server_url: "http://192.168.1.128:8080".to_string(),
+            server_url: BASE_URL.to_string(),
             hostname: whoami::hostname(),
             mac_address: get_mac_address(),
-            poll_interval_sec: 30,
+            poll_interval_sec: 01,
         };
 
         Self {
@@ -54,8 +55,12 @@ impl AgentCore {
     pub async fn initialize(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         log::info!("🚀 Initializing agent...");
         
+
+        if self.token.is_empty() {
+            return Err("AgentCore started without a valid token.".into());
+        }
         // Step 1: Authenticate with server
-        self.authenticate_with_server().await?;
+        // self.authenticate_with_server().await?;
         
         // Step 2: Report capabilities to backend
         let capabilities = PolicyCapability::all_capabilities();
@@ -86,6 +91,8 @@ impl AgentCore {
             self.agent_id = creds.agent_id;
             if let Some(token) = &creds.token {
                 self.token = token.clone();
+                // self.token = format!("Bearer {}", token);
+                log::info!("✅ Token stored successfully.");
             }
         }
         

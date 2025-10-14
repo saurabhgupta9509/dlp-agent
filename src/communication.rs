@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use log;
 use crate::capabilities::PolicyCapability;
-
+use crate::config::BASE_URL;
 // ===== DATA STRUCTURES =====
 
 /// Response from authentication endpoints
@@ -18,6 +18,8 @@ pub struct AuthResponse {
     pub status: String,
     #[serde(rename = "userId")]  // ✅ Optional: include both for compatibility
     pub user_id: Option<u64>,
+
+    pub token: String, 
 }
 
 /// Credentials stored for the agent
@@ -74,7 +76,7 @@ impl ServerCommunicator {
                 .timeout(Duration::from_secs(30))
                 .build()
                 .expect("Failed to create HTTP client"),
-            base_url: "http://192.168.1.128:8080".to_string(),
+            base_url:BASE_URL.to_string(),
             credentials: None,
         }
     }
@@ -144,7 +146,7 @@ impl ServerCommunicator {
     
             let response = self.client
                 .post(&url)
-                .header("Content-Type", "application/json")
+                // .header("Content-Type", "application/json")
                 .json(&auth_data)
                 .send()
                 .await?;
@@ -163,7 +165,7 @@ impl ServerCommunicator {
                             if let Some(data) = api_response.data {
                                 if let Some(mut creds) = self.credentials.take() {
                                     creds.agent_id = data.agent_id;
-                                    // creds.token = Some(data.token);
+                                    creds.token = Some(data.token);
                                     self.credentials = Some(creds);
                                 }
                                 
@@ -228,7 +230,7 @@ impl ServerCommunicator {
             "agentId": agent_id,
             "capabilities": capabilities
         });
-
+        println!("DEBUG: Sending JSON: {}", serde_json::to_string_pretty(&request_data)?);
         log::info!("📤 Reporting {} capabilities to backend...", capabilities.len());
         
         let response = self.client

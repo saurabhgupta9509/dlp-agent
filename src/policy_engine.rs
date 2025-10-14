@@ -6,6 +6,7 @@ use crate::policy_constants::*;
 
 /// Represents a policy that can be assigned to an agent
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Policy {
     pub policy_code: String,  // Unique identifier (matches policy_constants)
     pub name: String,         // Human-readable name
@@ -72,6 +73,8 @@ impl PolicyEngine {
     pub fn is_usb_protection_enabled(&self) -> bool {
         self.policies.iter().any(|p| p.category == "USB" && p.is_active)
     }
+    
+
     
     /// Check if any file protection is enabled
     pub fn is_file_protection_enabled(&self) -> bool {

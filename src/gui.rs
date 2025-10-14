@@ -4,7 +4,7 @@
 use dialoguer::{console::Style, Input, Select, Password};
 use std::process;
 use crate::communication::ServerCommunicator;
-
+use crate::config::BASE_URL;
 /// GUI for agent interaction and testing
 pub struct AgentGUI {
     pub agent_id: u64,
@@ -24,7 +24,7 @@ impl AgentGUI {
             token: String::new(),
             username: String::new(),
             password: String::new(),
-            server_url: "http://192.168.128:8080".to_string(),
+            server_url:BASE_URL.to_string(),
             is_authenticated: false,
             communicator: None,
         }
@@ -42,7 +42,20 @@ impl AgentGUI {
             }
         }
     }
+        // Add this new function to your AgentGUI impl block
+        pub async fn run_authentication_only(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+            println!("🚀 Starting DLP Agent Authentication...");
+            
+            // Loop only until authenticated
+            while !self.is_authenticated {
+                self.show_main_menu().await?;
+            }
+            
+            Ok(())
+        }
 
+// You can keep your old run() method for testing if you want, but this new
+// one is what main.rs will now use.
     /// Show main menu (authentication)
     async fn show_main_menu(&mut self) -> Result<(), Box<dyn std::error::Error>> {
         println!("\n{}", Style::new().bold().apply_to("🛡️ DLP Agent"));
@@ -106,8 +119,12 @@ impl AgentGUI {
                             self.agent_id = creds.agent_id;
                             self.username = creds.username.clone();
                             self.password = creds.password.clone();
+                            if let Some(token) = &creds.token {
+                                self.token = token.clone();
+                            }
                             self.is_authenticated = true;
                             self.communicator = Some(communicator);
+                             // THIS IS THE MISSING LINE: Save the token to the GUI struct
                             
                             println!("✅ Agent authenticated successfully!");
                             println!("🎯 Agent ID: {}", self.agent_id);
@@ -157,6 +174,10 @@ impl AgentGUI {
                     self.agent_id = creds.agent_id;
                     self.username = creds.username.clone();
                     self.password = creds.password.clone();
+
+                    if let Some(token) = &creds.token {
+                        self.token = token.clone();
+                    }
                     self.is_authenticated = true;
                     self.communicator = Some(communicator);
                     println!("✅ Login successful!");
@@ -183,11 +204,9 @@ impl AgentGUI {
         let choices = &[
             "1. View Profile & Status",
             "2. Refresh Policies", 
-            "3. Test USB Protection",
-            "4. View Active Policies",
-            "5. Send Test Alert",
-            "6. Logout",
-            "7. Exit"
+            "3.View Active Policies",
+            "4. Logout",
+            "5. Exit",
         ];
 
         let selection = Select::new()
@@ -199,18 +218,18 @@ impl AgentGUI {
         match selection {
             0 => self.view_profile().await?,
             1 => self.refresh_policies().await?,
-            2 => self.test_usb_protection().await?,
-            3 => self.view_active_policies().await?,
-            4 => self.send_test_alert().await?,
-            5 => {
+            // 2 => self.test_usb_protection().await?,
+            2 => self.view_active_policies().await?,
+            3 => {
                 self.logout();
                 println!("👋 Logged out successfully!");
-            }
-            6 => {
+            },
+            4 => {
                 println!("👋 Goodbye!");
                 process::exit(0);
             }
-            _ => {}
+           ,
+           _ => {}
         }
 
         Ok(())
@@ -302,6 +321,8 @@ async fn test_usb_protection(&self) -> Result<(), Box<dyn std::error::Error>> {
                     println!("       - {}: {}", file_type, count);
                 }
             }
+
+
             if device.drive_letter == "E:" {
                 println!("     🎯 This is likely your USB drive (E:)");
             }
@@ -312,6 +333,8 @@ async fn test_usb_protection(&self) -> Result<(), Box<dyn std::error::Error>> {
                     println!("       - {}", file);
                 }
             }
+
+
         }
         
         println!("\n🔍 Testing policy enforcement...");
@@ -322,9 +345,11 @@ async fn test_usb_protection(&self) -> Result<(), Box<dyn std::error::Error>> {
         println!("   With USB_BLOCK_EXECUTABLES: ⚠️  Executable files would be blocked");
         println!("   With USB_DETECT_SUSPICIOUS: 🔍 Suspicious files would be detected");
     }
-    
+        
     println!("\n✅ USB protection test completed");
     Ok(())
+
+
 }
 
     /// View active policies
