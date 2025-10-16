@@ -1305,7 +1305,7 @@
 
         try {
             const result = await callApi('/api/admin/protection-policies', { method: 'GET' });
-<!--            const policies = (result?.data[category] || []);-->
+          // const policies = (result?.data[category] || []);-->
             const container = document.getElementById('policiesContainer');
 
             if (!result || !result.success) {
