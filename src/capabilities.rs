@@ -182,4 +182,18 @@ impl PolicyCapability {
             },
         ]
     }
+
+    pub fn network_capabilities() -> Vec<Self> {
+        vec![
+            PolicyCapability {
+                code: POLICY_NETWORK_DNS_BLOCK.to_string(),
+                name: "DNS Filtering (Domain Block)".to_string(),
+                description: "Block specific domains/IPs by adding them to the firewall.".to_string(),
+                category: "NETWORK".to_string(),
+                action: "BLOCK".to_string(),
+                target: "DOMAINS_IPS".to_string(),
+                severity: "HIGH".to_string(),
+            },
+        ]
+    }
 }

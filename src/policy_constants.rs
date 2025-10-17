@@ -11,4 +11,4 @@ pub const POLICY_USB_SCAN_FILES: &str = "USB_SCAN_FILES";
 pub const POLICY_FILE_MONITOR_ACCESS: &str = "FILE_MONITOR_ACCESS";
 
 // Network Protection Policies
-pub const POLICY_NETWORK_MONITOR: &str = "NETWORK_MONITOR";
+pub const POLICY_NETWORK_DNS_BLOCK: &str = "NETWORK_DNS_BLOCK";

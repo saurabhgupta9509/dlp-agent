@@ -8,7 +8,7 @@ pub static BASE_URL: Lazy<String> = Lazy::new(|| {
     // In enterprise builds, this could be read from a config file or environment variable
     std::env::var("DLP_SERVER_URL").unwrap_or_else(|_| {
         // "http://10.180.30.73:8080".to_string()
-        "http://192.168.19.1:8080".to_string()
+        "http://192.168.1.127:8080".to_string()
 
     })
 });

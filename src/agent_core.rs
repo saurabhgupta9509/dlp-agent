@@ -3,6 +3,7 @@
 
 use crate::policy_engine::PolicyEngine;
 use crate::communication::ServerCommunicator;
+use crate::protection_modules::network_protection::NetworkProtection;
 use crate::protection_modules::ProtectionModule;
 use crate::capabilities::PolicyCapability;
 use std::collections::HashMap;
@@ -207,6 +208,13 @@ async fn execute_protections(&mut self) -> Result<(), Box<dyn std::error::Error>
         // TODO: Initialize other protection modules
         // self.protection_modules.insert("FILE".to_string(), Box::new(FileProtection::new()));
         // self.protection_modules.insert("NETWORK".to_string(), Box::new(NetworkProtection::new()));
+        let network_module = NetworkProtection::new()
+            .expect("FATAL: Failed to initialize Network Protection. Are you running as Administrator?");
+            
+        self.protection_modules.insert(
+            "NETWORK".to_string(),
+            Box::new(network_module)
+        );
         
         log::info!("✅ Initialized {} protection modules", self.protection_modules.len());
     }
@@ -220,7 +228,7 @@ async fn execute_protections(&mut self) -> Result<(), Box<dyn std::error::Error>
         
         let mut info = String::from("Active policies:\n");
         for policy in active_policies {
-            info.push_str(&format!("  • {} ({})\n", policy.name, policy.policy_code));
+            info.push_str(&format!("  • {} ({})\n", policy.name, policy.code));
         }
         info
     }

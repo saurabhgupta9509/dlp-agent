@@ -5,7 +5,7 @@ pub mod usb_protection;
 
 use crate::policy_engine::PolicyEngine;
 use crate::communication::ServerCommunicator;
-
+pub mod network_protection;
 /// Trait that all protection modules must implement
 #[async_trait::async_trait]
 pub trait ProtectionModule: Send + Sync {
